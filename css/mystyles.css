@@ -1,0 +1,11 @@
+body{
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    background-color: rgb(208, 207, 207);
+}
+h1,h2,h3, .subheading {
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif !important;
+}
+a:hover {
+    color:aliceblue !important
+    
+}

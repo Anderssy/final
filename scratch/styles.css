@@ -1,0 +1,55 @@
+body {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    background-color: rgba(145, 87, 87, 0.495);
+    color: aliceblue;
+    background-image: url(https://byucougars.com/imgproxy/zbYPd9UG4pz_3UO9EZ7qeKdOzW39L7V90DPoh7HHjBo/rs:fit:1980:0:0/g:ce/q:90/aHR0cHM6Ly9zdG9yYWdlLmdvb2dsZWFwaXMuY29tL2J5dWNvdWdhcnMtcHJvZC8yMDIzLzA5LzMwL1hEbzVudHFMRk5VVDJyd3gwb0dKdTJBSG96Q0hYb2ZLbkhmcUcxbzIuanBn.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+
+}
+
+a {
+    color: black;
+    /* background-color: antiquewhite; */
+}
+a:visited {
+    color: purple;
+}
+
+h1,h2 {
+    text-align: center;
+}
+
+img {
+    border: 5px solid whitesmoke;
+    padding: 4px;
+    /* margin: auto; */
+    height: 200px;
+    /* display: block; */
+}
+
+.rizz {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    color: brown;
+    border: 5px dashed black;
+    font-size: x-large;
+    font-weight: bolder;
+    /* background-color: antiquewhite; */
+
+}
+
+.rizz:hover {
+    font-size: 450%;
+    color: blue;
+    border: 5px solid burlywood;
+}
+
+li {
+    width: fit-content;
+    text-align: center;
+}
+
+li:hover {
+    text-decoration: underline;
+    background-color: rgba(128, 128, 128, 0.186);
+}

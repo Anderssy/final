@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Country Guessing Game - Multiple Choice</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* Apply the game font */
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #1a202c; /* Dark background */
+            color: #a0aec0; /* Light gray text */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-transform: uppercase; /* Ensure consistent casing */
+        }
+        /* Style buttons */
+        .btn {
+            background-color: #4a5568; /* Gray */
+            border: 2px solid #2d3748; /* Darker Gray */
+            color: #e2e8f0; /* Lighter Gray */
+            padding: 0.75rem 1.5rem;
+            margin: 0.5rem;
+            border-radius: 0.375rem; /* md */
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease, border-color 0.2s ease;
+            text-align: center;
+            display: block;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+            font-size: 0.9rem;
+        }
+        .btn:hover:not(:disabled) {
+            background-color: #718096;
+            transform: scale(1.02);
+        }
+        .btn:disabled {
+            background-color: #2d3748;
+            color: #718096;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        /* Style for correct/incorrect feedback on choice buttons */
+        .choice-btn.correct {
+            background-color: #38a169; /* Green */
+            color: white;
+            border-color: #2f855a;
+        }
+        .choice-btn.incorrect {
+            background-color: #e53e3e; /* Red */
+            color: white;
+            border-color: #c53030;
+        }
+        /* Difficulty button styles */
+        .difficulty-btn {
+             font-size: 0.9rem;
+             display: inline-block;
+             width: auto;
+             padding: 0.5rem 1rem;
+             margin: 0.25rem;
+        }
+        .difficulty-btn.selected {
+            background-color: #3182ce; /* Blue for selected */
+            color: white;
+            border-color: #2b6cb0;
+        }
+        /* Hint button style */
+        #hint-button {
+            background-color: #dd6b20; /* Orange */
+            color: white;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem; /* Add margin below */
+            border: none;
+            width: auto; /* Auto width */
+            display: inline-block; /* Make it inline */
+        }
+         #hint-button:hover:not(:disabled) {
+            background-color: #c05621; /* Darker Orange */
+        }
+        /* Exit button style */
+        #exit-button {
+            background-color: #718096; /* Muted Gray */
+            color: #e2e8f0;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+            border: none;
+            width: auto; /* Auto width */
+            display: inline-block; /* Make it inline */
+            margin-left: 1rem; /* Space it from other info */
+        }
+         #exit-button:hover:not(:disabled) {
+            background-color: #e53e3e; /* Red on hover */
+             color: white;
+        }
+
+
+        /* Style the main game container */
+        #game-container {
+            position:relative;
+            background-color: #2d3748; /* Dark Gray */
+            padding: 2rem;
+            border-radius: 0.5rem; /* lg */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            max-width: 90%;
+            width: 600px; /* Fixed width for better layout */
+        }
+
+        /* Style the message box */
+        #message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4a5568;
+            color: #e2e8f0;
+            padding: 1rem 2rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 100;
+            display: none; /* Hidden by default */
+            font-size: 0.9rem;
+        }
+        #message-box.success {
+             background-color: #38a169; /* Green */
+             color: white;
+        }
+         #message-box.error {
+             background-color: #e53e3e; /* Red */
+             color: white;
+        }
+        /* Style the start/restart button */
+        #start-button {
+            background-color: #3182ce; /* Blue */
+            color: white;
+            font-size: 1rem;
+            margin-top: 1.5rem;
+            border: none;
+             display: inline-block;
+             width: auto;
+             padding: 0.75rem 1.5rem;
+        }
+        #start-button:hover:not(:disabled) {
+            background-color: #2b6cb0; /* Darker Blue */
+        }
+        /* Utility class to hide elements */
+        .hidden {
+            display: none;
+        }
+        /* Choices area styling */
+        #choices-area {
+            margin-top: 1rem; /* Reduced margin */
+            min-height: 150px;
+        }
+        /* Game Info Area */
+        #game-info {
+            display: flex;
+            justify-content: space-around; /* Distribute items */
+            align-items: center; /* Align vertically */
+            flex-wrap: wrap; /* Allow wrapping if needed */
+            margin-bottom: 1.5rem; /* Consistent margin */
+            position: relative; /* Needed for potential absolute positioning inside */
+        }
+        #lives-display span {
+             color: #e53e3e; /* Red hearts */
+             margin-left: 0.25rem; /* Space between hearts */
+             font-size: 1.2em; /* Slightly larger hearts */
+        }
+        /* Hint Area Styling for Emojis */
+        #hint-text {
+             font-size: 1.5em; /* Make emojis larger */
+             letter-spacing: 0.1em; /* Add spacing between emojis */
+        }
+    </style>
+    <link rel="stylesheet" href="divstyles.css">
+</head>
+<body>
+    <div class="scratch-label">
+        <a href="index.html" target="_blank"> Scratch </a>
+    </div>
+    <div id="game-container">
+        <h1 class="text-3xl font-bold mb-4 text-white">Country Guessing Game</h1>
+        <h2 class="text-xl mb-4 text-blue-300">- Multiple Choice -</h2>
+
+        <div id="difficulty-selection" class="mb-6">
+            <h2 class="text-xl mb-3 text-gray-300">Select Difficulty:</h2>
+            <button id="difficulty-easy" class="btn difficulty-btn" data-difficulty="easy">Easy</button>
+            <button id="difficulty-medium" class="btn difficulty-btn" data-difficulty="medium">Medium</button>
+            <button id="difficulty-hard" class="btn difficulty-btn" data-difficulty="hard">Hard</button>
+        </div>
+
+        <div id="game-area" class="hidden">
+             <div id="hint-area" class="mb-2 p-3 bg-gray-700 rounded min-h-[50px]">
+                <p class="text-sm"><span id="hint-label">Hint:</span> <span id="hint-text"></span></p>
+            </div>
+             <button id="hint-button" class="btn hidden">Use Hint (Cost: 1 ❤️)</button>
+
+            <div id="choices-area" class="mb-6">
+                </div>
+
+            <div id="game-info">
+                <div>Time: <span id="timer" class="font-bold text-yellow-400">--</span>s</div>
+                <div>Score: <span id="score" class="font-bold text-green-400">--</span></div>
+                <div id="lives-display">Lives: </div>
+                <button id="exit-button" class="btn hidden">Exit</button>
+            </div>
+        </div>
+
+        <button id="start-button" class="btn hidden">Start Game</button>
+
+        <div id="message-box"></div>
+    </div>
+
+    <script>
+        // --- Game Data ---
+        const wordsByDifficulty = {
+             easy: [ /* Same as before */
+                { name: "ITALY", hint: "European country shaped like a boot, famous for pasta and pizza." },
+                { name: "JAPAN", hint: "Island nation in East Asia, known for sushi and technology." },
+                { name: "SPAIN", hint: "European country known for flamenco and bullfighting." },
+                { name: "CHINA", hint: "Most populous country, known for the Great Wall." },
+                { name: "INDIA", hint: "South Asian country with a large population and diverse culture." },
+                { name: "EGYPT", hint: "Located in Northeast Africa, home to ancient pyramids." },
+                { name: "FRANCE", hint: "Western European country famous for the Eiffel Tower and cuisine." },
+                { name: "BRAZIL", hint: "Largest country in South America, famous for Carnival." },
+                { name: "CANADA", hint: "North American country known for maple syrup and politeness." },
+                { name: "MEXICO", hint: "North American country known for tacos and ancient ruins." }
+             ],
+            medium: [ /* Same as before */
+                 { name: "AUSTRALIA", hint: "Country and continent known for kangaroos and the Outback." },
+                 { name: "GERMANY", hint: "Central European country known for beer, sausages, and cars." },
+                 { name: "ARGENTINA", hint: "South American country known for tango and Patagonia."},
+                 { name: "RUSSIA", hint: "Largest country in the world by area."},
+                 { name: "GREECE", hint: "Southeastern European country, birthplace of democracy and the Olympics."},
+                 { name: "VIETNAM", hint: "Southeast Asian country known for pho and motorbikes." },
+                 { name: "NORWAY", hint: "Scandinavian country known for fjords and Vikings." },
+                 { name: "PERU", hint: "South American country home to Machu Picchu." }
+            ],
+            hard: [ /* Same as before */
+                { name: "MONGOLIA", hint: "Landlocked country in East Asia, known for Genghis Khan.", emojiHint: "🐎⛰️🏹" },
+                { name: "ETHIOPIA", hint: "Country in the Horn of Africa, origin of coffee.", emojiHint: "☕️🦁✝️" },
+                { name: "UZBEKISTAN", hint: "Central Asian country on the Silk Road.", emojiHint: "🕌💎🛣️" },
+                { name: "MADAGASCAR", hint: "Island country off the coast of East Africa, known for lemurs.", emojiHint: "🏝️🐒🌳" },
+                { name: "FINLAND", hint: "Nordic country known for saunas and lakes.", emojiHint: "🧖‍♀️🌲🦌" },
+                { name: "CHILE", hint: "Long, narrow country on the western edge of South America.", emojiHint: "🇨🇱⛰️🍷🗿" },
+                { name: "NEPAL", hint: "Himalayan country home to Mount Everest.", emojiHint: "🏔️🧘‍♂️🏳️‍🌈" },
+                { name: "ICELAND", hint: "Nordic island nation known for geysers and volcanoes.", emojiHint: "🌋🧊♨️" }
+            ]
+        };
+
+        // Difficulty Settings
+        const difficultySettings = {
+            easy: { time: 45 },
+            medium: { time: 35 },
+            hard: { time: 25 }
+        };
+        const STARTING_LIVES = 3;
+
+        // --- DOM Elements ---
+        const hintTextElement = document.getElementById('hint-text');
+        const hintLabelElement = document.getElementById('hint-label');
+        const hintButton = document.getElementById('hint-button');
+        const choicesAreaElement = document.getElementById('choices-area');
+        const timerElement = document.getElementById('timer');
+        const scoreElement = document.getElementById('score');
+        const livesDisplayElement = document.getElementById('lives-display');
+        const exitButton = document.getElementById('exit-button'); // New Exit Button element
+        const startButton = document.getElementById('start-button');
+        const messageBox = document.getElementById('message-box');
+        const difficultySelectionDiv = document.getElementById('difficulty-selection');
+        const gameAreaDiv = document.getElementById('game-area');
+        const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+
+        // --- Game State Variables ---
+        let currentCorrectAnswer = '';
+        let currentHint = '';
+        let currentEmojiHint = '';
+        let score = 0;
+        let lives = STARTING_LIVES;
+        let timeLeft = 0;
+        let timerInterval = null;
+        let gameActive = false;
+        let selectedDifficulty = null;
+        let questionTimeout = null;
+
+        // --- Functions ---
+
+        /**
+         * Displays a message in the message box.
+         * (Same as before)
+         */
+        function showMessage(text, type = '', duration = 2000) {
+            messageBox.textContent = text;
+             messageBox.className = 'fixed top-[20px] left-1/2 -translate-x-1/2 bg-gray-600 text-gray-100 p-4 rounded shadow-md z-50 text-sm';
+            messageBox.classList.remove('hidden');
+            messageBox.classList.add('block');
+
+            if (type === 'success') {
+                messageBox.classList.replace('bg-gray-600','bg-green-600');
+                 messageBox.classList.replace('text-gray-100','text-white');
+            } else if (type === 'error') {
+                 messageBox.classList.replace('bg-gray-600','bg-red-600');
+                 messageBox.classList.replace('text-gray-100','text-white');
+            }
+             setTimeout(() => {
+                messageBox.classList.replace('block','hidden');
+            }, duration);
+        }
+
+        /**
+         * Shuffles an array in place.
+         * (Same as before)
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+
+        /**
+         * Generates incorrect choices (distractors).
+         * (Same as before)
+         */
+        function generateDistractors(correctAnswer, difficulty) {
+            const wordList = wordsByDifficulty[difficulty];
+            const distractors = [];
+            if (!wordList || !Array.isArray(wordList)) {
+                console.error(`Word list for difficulty "${difficulty}" is missing or invalid.`);
+                return ["INVALID", "DATA"];
+            }
+            const availableWords = wordList.filter(wordObj => wordObj && wordObj.name !== correctAnswer);
+
+            while (distractors.length < 2 && availableWords.length > 0) {
+                const randomIndex = Math.floor(Math.random() * availableWords.length);
+                const potentialDistractor = availableWords[randomIndex].name;
+                if (!distractors.includes(potentialDistractor)) {
+                    distractors.push(potentialDistractor);
+                }
+                 availableWords.splice(randomIndex, 1);
+            }
+             while (distractors.length < 2) {
+                 distractors.push("SOME COUNTRY");
+             }
+            return distractors;
+        }
+
+        /**
+         * Updates the lives display with heart icons.
+         * (Same as before)
+         */
+        function updateLivesDisplay() {
+            livesDisplayElement.innerHTML = 'Lives: ';
+            for (let i = 0; i < lives; i++) {
+                const heartSpan = document.createElement('span');
+                heartSpan.textContent = '❤️';
+                livesDisplayElement.appendChild(heartSpan);
+            }
+        }
+
+
+        /**
+         * Selects a question (country and hint/emoji) and displays it with choices.
+         * (Same as before)
+         */
+        function displayNewQuestion() {
+            clearTimeout(questionTimeout);
+
+             if (!selectedDifficulty || !wordsByDifficulty[selectedDifficulty]) {
+                console.error("Difficulty not set or invalid!");
+                resetToDifficultySelection();
+                return;
+            }
+            const wordList = wordsByDifficulty[selectedDifficulty];
+            if (wordList.length === 0) {
+                 gameOver("No more questions for this difficulty!");
+                 return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * wordList.length);
+            const selectedWordData = wordList[randomIndex];
+            currentCorrectAnswer = selectedWordData.name.toUpperCase();
+            currentHint = selectedWordData.hint;
+            currentEmojiHint = selectedWordData.emojiHint || '';
+
+            console.log(`Selected question (${selectedDifficulty}):`, currentCorrectAnswer);
+
+            const distractors = generateDistractors(currentCorrectAnswer, selectedDifficulty);
+            const choices = [currentCorrectAnswer, ...distractors];
+            shuffleArray(choices);
+
+            hintButton.classList.add('hidden');
+            hintTextElement.textContent = '';
+            hintLabelElement.textContent = 'Hint:';
+
+            if (selectedDifficulty === 'hard') {
+                 hintTextElement.textContent = currentEmojiHint;
+            } else if (selectedDifficulty === 'medium') {
+                 hintTextElement.textContent = '(Hint available for 1 ❤️)';
+                 hintButton.classList.remove('hidden');
+                 hintButton.disabled = (lives <= 0);
+            } else { // Easy
+                 hintTextElement.textContent = currentHint;
+            }
+
+            choicesAreaElement.innerHTML = '';
+            choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.textContent = choice;
+                button.classList.add('btn', 'choice-btn');
+                button.dataset.answer = choice;
+                button.addEventListener('click', () => handleAnswer(choice, button));
+                choicesAreaElement.appendChild(button);
+            });
+        }
+
+         /**
+         * Handles the request for a hint (Medium difficulty).
+         * (Same as before)
+         */
+        function handleHintRequest() {
+             if (!gameActive || selectedDifficulty !== 'medium' || lives <= 0) {
+                 return;
+             }
+             lives--;
+             updateLivesDisplay();
+             hintTextElement.textContent = currentHint;
+             hintButton.classList.add('hidden');
+             showMessage('Hint revealed! -1 ❤️', 'error', 1500);
+             if (lives <= 0) {
+                 setTimeout(() => gameOver("Out of lives!"), 1500);
+             }
+         }
+
+
+        /**
+         * Handles the user's answer selection.
+         * (Same as before)
+         */
+        function handleAnswer(selectedAnswer, buttonElement) {
+            if (!gameActive) return;
+
+            choicesAreaElement.querySelectorAll('.choice-btn').forEach(btn => btn.disabled = true);
+            hintButton.disabled = true;
+
+            choicesAreaElement.querySelectorAll('.choice-btn').forEach(btn => {
+                 if(btn.dataset.answer === currentCorrectAnswer) {
+                     btn.classList.add('correct');
+                 }
+            });
+
+            if (selectedAnswer === currentCorrectAnswer) {
+                score++;
+                scoreElement.textContent = score;
+                timeLeft += 5;
+                timerElement.textContent = timeLeft;
+                showMessage(`Correct! +5 seconds!`, 'success', 1500);
+                questionTimeout = setTimeout(displayNewQuestion, 1500);
+            } else {
+                lives--;
+                updateLivesDisplay();
+                buttonElement.classList.add('incorrect');
+                showMessage(`Incorrect! -1 ❤️`, 'error', 1500);
+                if (lives <= 0) {
+                     setTimeout(() => gameOver("Out of lives!"), 1500);
+                } else {
+                    questionTimeout = setTimeout(displayNewQuestion, 1500);
+                }
+            }
+        }
+
+        /**
+         * Updates the timer display every second.
+         * (Same as before)
+         */
+        function updateTimer() {
+            if (!gameActive) return;
+            timeLeft--;
+            timerElement.textContent = timeLeft;
+            if (timeLeft <= 0) {
+                 timerElement.textContent = 0;
+                gameOver("Time's Up!");
+            }
+        }
+
+
+        /**
+         * Ends the game.
+         * Hides the exit button.
+         */
+        function gameOver(message) {
+            if (!gameActive) return;
+            gameActive = false;
+            clearTimeout(questionTimeout);
+            clearInterval(timerInterval);
+
+            exitButton.classList.add('hidden'); // Hide exit button on game over
+
+            showMessage(`${message} Final Score: ${score}`, (message.includes("Time's Up") || message.includes("lives")) ? 'error' : 'success', 5000);
+            choicesAreaElement.querySelectorAll('.choice-btn').forEach(btn => btn.disabled = true);
+            hintButton.disabled = true;
+            startButton.textContent = 'Play Again?';
+            startButton.classList.remove('hidden');
+        }
+
+        /**
+         * Resets the UI to the difficulty selection screen.
+         * Hides the exit button.
+         */
+        function resetToDifficultySelection() {
+            gameActive = false;
+            selectedDifficulty = null;
+            clearTimeout(questionTimeout);
+            clearInterval(timerInterval);
+
+            gameAreaDiv.classList.add('hidden');
+            difficultySelectionDiv.classList.remove('hidden');
+            startButton.classList.add('hidden');
+            hintButton.classList.add('hidden');
+            exitButton.classList.add('hidden'); // Hide exit button on reset
+
+            difficultyButtons.forEach(btn => btn.classList.remove('selected'));
+            hintTextElement.textContent = '';
+            choicesAreaElement.innerHTML = '';
+            timerElement.textContent = '--';
+            scoreElement.textContent = '--';
+            livesDisplayElement.innerHTML = 'Lives: --';
+            messageBox.classList.add('hidden');
+        }
+
+        /**
+         * Handles the user clicking the Exit button.
+         */
+        function handleExit() {
+            if (!gameActive) return; // Only exit if game is active
+            console.log("Exiting game...");
+            gameActive = false; // Set game inactive immediately
+            clearTimeout(questionTimeout);
+            clearInterval(timerInterval);
+            showMessage("Exited Game", "", 1500); // Brief confirmation
+            resetToDifficultySelection(); // Go back to difficulty selection
+        }
+
+
+        /**
+         * Initializes and starts a new game based on selected difficulty.
+         * Shows the exit button.
+         */
+        function startGame() {
+            if (!selectedDifficulty) {
+                 showMessage("Please select a difficulty first!", "error");
+                 resetToDifficultySelection();
+                 return;
+            }
+            score = 0;
+            lives = STARTING_LIVES;
+            const settings = difficultySettings[selectedDifficulty];
+            timeLeft = settings.time;
+            gameActive = true; // Set game active
+            clearInterval(timerInterval);
+            scoreElement.textContent = score;
+            updateLivesDisplay();
+            timerElement.textContent = timeLeft;
+            messageBox.classList.add('hidden');
+
+            exitButton.classList.remove('hidden'); // Show exit button on game start
+            startButton.classList.add('hidden'); // Hide start button
+
+            displayNewQuestion();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        // --- Event Listeners ---
+
+        // Difficulty Selection Listener
+        difficultyButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (button.disabled) return;
+
+                selectedDifficulty = button.dataset.difficulty;
+                difficultyButtons.forEach(btn => btn.classList.remove('selected'));
+                button.classList.add('selected');
+
+                difficultySelectionDiv.classList.add('hidden');
+                gameAreaDiv.classList.remove('hidden');
+                startButton.classList.remove('hidden');
+                startButton.textContent = 'Start Game';
+
+                const settings = difficultySettings[selectedDifficulty];
+                timerElement.textContent = settings.time;
+                scoreElement.textContent = 0;
+                livesDisplayElement.innerHTML = 'Lives: ';
+                 for (let i = 0; i < STARTING_LIVES; i++) { livesDisplayElement.innerHTML += '<span>❤️</span>';}
+
+                hintTextElement.textContent = 'Get Ready...';
+                choicesAreaElement.innerHTML = '';
+                hintButton.classList.add('hidden');
+                exitButton.classList.add('hidden'); // Ensure exit button is hidden initially here too
+            });
+        });
+
+        // Hint Button Listener
+        hintButton.addEventListener('click', handleHintRequest);
+
+        // Exit Button Listener
+        exitButton.addEventListener('click', handleExit);
+
+
+        // Start/Restart Button Listener
+        startButton.addEventListener('click', () => {
+            if (startButton.textContent === 'Play Again?') {
+                resetToDifficultySelection();
+            } else {
+                startGame();
+            }
+        });
+
+        // --- Initial Setup ---
+        gameAreaDiv.classList.add('hidden');
+        startButton.classList.add('hidden');
+        hintButton.classList.add('hidden');
+        exitButton.classList.add('hidden'); // Ensure exit button is hidden on initial load
+
+    </script>
+</body>
+</html>
